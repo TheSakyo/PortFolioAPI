@@ -19,8 +19,6 @@ public class UserInfoResponse {
 
 	private String email; // L'adresse e-mail de l'utilisateur connecté en réponse pour les cookies.
 
-	private Set<ProjectDTO> projects; // Liste des projet(s) de l'utilisateur connecté en réponse pour les cookies.
-
 	private Set<RoleDTO> roles; // La liste des rôles de l'utilisateur connecté en réponse pour les cookies.
 
 
@@ -41,12 +39,11 @@ public class UserInfoResponse {
 	 * @param email L'{@link String adresse e-mail} de l'{@link User utilisateur} connecté en cookie.
 	 * @param roles La {@link Set liste} des {@link RoleDTO rôle}s associé à l'{@link User utilisateur} connecté en cookie.
 	 */
-	public UserInfoResponse(Long id, String uuid, String name, String email, Set<ProjectDTO> projects, Set<RoleDTO> roles) {
+	public UserInfoResponse(Long id, String name, String email, Set<RoleDTO> roles) {
 
 		this.id = id;
 		this.name = name;
 		this.email = email;
-		this.projects = projects;
 		this.roles = roles;
 	}
 

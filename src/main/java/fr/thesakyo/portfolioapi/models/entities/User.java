@@ -30,6 +30,9 @@ public class User extends BaseEntity implements Serializable {
     @JsonIgnore
     private String password; // Mot de passe (crypté) de l'utilisateur.
 
+    @NotNull
+    private boolean verificationEnabled; // Est-ce que l'utilisateur est vérifié ?
+
     @OneToMany(mappedBy = "user")
     @JsonIgnoreProperties({"user"})
     @OrderBy("id DESC")
@@ -59,14 +62,16 @@ public class User extends BaseEntity implements Serializable {
      * @param name Le {@link String nom} de l'{@link User utilisateur}.
      * @param email L'{@link String Adresse e-mail} de l'{@link User utilisateur}.
      * @param password Le {@link String mot de passe} de l'{@link User utilisateur}.
+     * @param verificationEnabled Une valeur booléenne disant si l'{@link User utilisateur} est bien vérifié.
      * @param projects La {@link Set liste} des {@link Project projet}s associés à l'{@link User utilisateur}.
      * @param roles La {@link Set liste} des {@link Role role}s associés à l'{@link User utilisateur}.
      */
-    public User(String name, String email, String password, Set<Project> projects, Set<Role> roles) {
+    public User(String name, String email, String password, boolean verificationEnabled, Set<Project> projects, Set<Role> roles) {
 
         this.name = name;
         this.email = email;
         this.password = password;
+        this.verificationEnabled = verificationEnabled;
         this.projects = projects;
         this.roles = roles;
     }
@@ -100,6 +105,14 @@ public class User extends BaseEntity implements Serializable {
     public String getPassword() { return password; }
 
     /**
+     * Vérifie si l'{@link User utilisateur} est vérifié.
+     *
+     * @return Une valeur booléenne indiquant si l'{@link User utilisateur} est vérifié.
+     */
+    @NotNull
+    public boolean getVerificationEnabled() { return verificationEnabled; }
+
+    /**
      * Récupère la {@link Set liste} des {@link Project projet}s associés à l'{@link User utilisateur}.
      *
      * @return La {@link Set liste} des {@link Project projet}s associés à l'{@link User utilisateur}.
@@ -112,7 +125,7 @@ public class User extends BaseEntity implements Serializable {
      * @return La {@link Set liste} des {@link Role rôle}s associés à l'{@link User utilisateur}.
      */
     public Set<Role> getRoles() { return roles; }
-                
+
                     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
                     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
                     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -137,6 +150,14 @@ public class User extends BaseEntity implements Serializable {
      * @param password Le {@link String mot de passe} (crypté) de l'{@link User utilisateur}.
      */
     public void setPassword(@NotBlank @Size(min = 5) @Size(max = 120) String password) { this.password = password; }
+
+    /**
+     * Définit si l'{@link User utilisateur} est vérifié.
+     *
+     * @param verificationEnabled Une valeur booléenne indiquant si l'{@link User utilisateur} est vérifié.
+     */
+    @NotNull
+    public void setVerificationEnabled(boolean verificationEnabled) { this.verificationEnabled = verificationEnabled; }
 
     /**
      * Définit la {@link Set liste} des {@link Project projet}s associés à l'{@link User utilisateur}.

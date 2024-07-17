@@ -32,6 +32,9 @@ public class UserDetailsImpl implements UserDetails {
     @JsonIgnore
     private String password; // Un mot de passe (crypté) de l'utilisateur authentifié.
 
+    @JsonIgnore
+    private boolean isEnabled; // L'utilisateur authentifié est-il bien enregistré.
+
     private final Collection<? extends GrantedAuthority> authorities; // Une collection d'autorisation pour l'utilisateur.
 
     /*****************************************************************/
@@ -45,14 +48,16 @@ public class UserDetailsImpl implements UserDetails {
     * @param name Le {@link String nom} de l'{@link User utilisateur}.
     * @param email L'{@link String adresse e-mail} de l'{@link User utilisateur}.
     * @param password Le {@link String mot de passe} (crypté) de l'{@link User utilisateur}.
+    * @param isEnabled Une valeur booléenne disant si l'{@link User utilisateur} est bien vérifié.
     * @param authorities Les {@link String autorisations} de l'{@link User utilisateur}.
     */
-    public UserDetailsImpl(Long id, String name, String email, String password, Collection<? extends GrantedAuthority> authorities) {
+    public UserDetailsImpl(Long id, String name, String email, String password, boolean isEnabled, Collection<? extends GrantedAuthority> authorities) {
 
         this.id = id;
         this.name = name;
         this.email = email;
         this.password = password;
+        this.isEnabled = isEnabled;
         this.authorities = authorities;
     }
 
@@ -72,7 +77,7 @@ public class UserDetailsImpl implements UserDetails {
                 .map(role -> new SimpleGrantedAuthority(role.getName().name()))
                 .collect(Collectors.toList());
 
-        return new UserDetailsImpl(user.getId(), user.getName(), user.getEmail(), user.getPassword(), authorities);
+        return new UserDetailsImpl(user.getId(), user.getName(), user.getEmail(), user.getPassword(), user.getVerificationEnabled(), authorities);
     }
 
     /****************************************************************/
@@ -118,12 +123,12 @@ public class UserDetailsImpl implements UserDetails {
     public String getPassword() { return password; }
 
     /**
-     * Vérifie si le compte authentifié est activé.
+     * Vérifie si le compte authentifié est vérifié.
      *
      * @return Une {@link Boolean valeur booléenne}.
      */
     @Override
-    public boolean isEnabled() { return true; }
+    public boolean isEnabled() { return isEnabled; }
 
     /*******************************************************/
     /*******************************************************/

@@ -2,7 +2,8 @@ package fr.thesakyo.portfolioapi.services.entities;
 
 import fr.thesakyo.portfolioapi.enums.ERole;
 import fr.thesakyo.portfolioapi.exceptions.UnauthorizedException;
-import fr.thesakyo.portfolioapi.helpers.StrHelper;
+import fr.thesakyo.portfolioapi.helpers.PermissionHelper;
+import fr.thesakyo.portfolioapi.helpers.RoleHelper;
 import fr.thesakyo.portfolioapi.models.DTO.UserDTO;
 import fr.thesakyo.portfolioapi.models.SerializableResponseEntity;
 import fr.thesakyo.portfolioapi.models.entities.*;
@@ -38,8 +39,13 @@ public class UserService {
     @Autowired
     private RoleRepository roleRepository; // Référentiel faisant référence aux rôles de la base de données.
 
+    /*******************************/
+
     @Autowired
     private DTOService dtoService; // Récupère le service lié au DTO
+
+    /*************************/
+
     @Autowired
     private RoleService roleService;
 
@@ -50,15 +56,44 @@ public class UserService {
     /**
      * Récupération de tous les {@link User utilisateur}s.
      *
-     * @return Une {@link List liste} d'{@link UserDTO utilisateur}s.
+     * @param entityClazz {@link Class} de l'{@link BaseEntity entité} associée aux {@link User utilisateur}s. (si nécessaire)
+     * @param entityId {@link Long Identifiant} de l'{@link BaseEntity entité} associée aux {@link User utilisateur}s (si nécessaire)
+     *
+     * @return Une {@link Set liste} d'{@link UserDTO utilisateur}s.
      */
-    public List<UserDTO> getAllUsers() {
+    public <C extends BaseEntity> Set<UserDTO> getAllUsers(Class<C> entityClazz, Long entityId) {
 
         // Récupère la liste des utilisateurs
-        List<User> users = userRepository.findAll();
+        Set<User> users = new HashSet<>(userRepository.findAll());
+
+        /************************************************/
+
+        /**
+         * Si on récupère un identifiant de l'entité et sa class,
+         * on filtre les utilisateurs étant associée à l'entité respective
+         */
+        if(entityId != null && entityClazz != null) {
+
+            switch(entityClazz.getSimpleName().toLowerCase()) {
+
+                case "language":
+
+                    users = userRepository.findAllByLanguageIdInProjets(entityId).orElse(new HashSet<>());
+                    break;
+
+                case "project":
+
+                    users = users.stream().filter(user -> user.getProjects()
+                            .stream().anyMatch(project -> project.getId().equals(entityId)))
+                            .collect(Collectors.toSet());
+                    break;
+
+                default: break;
+            }
+        }
 
         // On renvoie la liste d'utilisateur(s) et les convertis en leur 'DTO' respectif
-        return dtoService.convertToDTOs(new UserDTO(), users);
+        return new HashSet<>(dtoService.convertToDTOs(new UserDTO(), users));
     }
 
     /**
@@ -153,10 +188,11 @@ public class UserService {
         // Si on décide d'ajouter un rôle à l'utilisateur, on essaie de lui ajouter le rôle en question
         if(addRole) {
 
-            // Si l'utilisateur et le rôle ne sont pas 'null', on essaie d'ajouter son rôle, s'il ne l'a pas
+            // Si l'utilisateur et le rôle ne sont pas 'null', on essaie d'ajouter son rôle, s'il ne l'a pas.
             if(user != null && role != null && !user.getRoles().contains(role)) {
 
-                Set<Role> roles = checkRolesName(new HashSet<>(List.of(role.getName().name()))); // Vérifie et récupère les rôles de l'utilisateur modifiés
+                // Vérifie et récupère les rôles de l'utilisateur modifiés
+                Set<Role> roles = RoleHelper.checkRolesName(new HashSet<>(List.of(role.getName().name())), roleRepository);
                 user.setRoles(roles); // Ajoute les rôles à l'utilisateur
 
                 /*************************/
@@ -183,13 +219,13 @@ public class UserService {
                     case ROLE_SUPERADMIN:
 
                         rolesName = rolesName.stream().filter(element -> element.equalsIgnoreCase(ERole.ROLE_ADMIN.name())).collect(Collectors.toSet());
-                        user.setRoles(checkRolesName(rolesName));
+                        user.setRoles(RoleHelper.checkRolesName(rolesName, roleRepository));
                         break;
 
                     case ROLE_ADMIN:
 
                         rolesName = rolesName.stream().filter(element -> element.equalsIgnoreCase(ERole.ROLE_UNKNOWN.name())).collect(Collectors.toSet());
-                        user.setRoles(checkRolesName(rolesName));
+                        user.setRoles(RoleHelper.checkRolesName(rolesName, roleRepository));
                         break;
 
                     default:
@@ -228,16 +264,17 @@ public class UserService {
      *
      * @param id L'{@link Long Identifiant} de l'{@link User utilisateur}.
      * @param user Un nouvel objet '{@link User utilisateur}'.
-     * @param redirectURL Lien de redirection de l'API Spring.
      *
      * @return L'Objet '{@link UserDTO utilisateur}' mis à jour.
+     *
+     * @throws UnauthorizedException Si l'utilisateur n'a pas la permission pour modifier l'entité cible
      */
     @Transactional(rollbackFor = { UnauthorizedException.class })
-    public UserDTO updateUser(final Long id, User user, String redirectURL) {
+    public UserDTO updateUser(final Long id, User user) {
 
         User existingUser = userRepository.findById(id).orElse(null); // Récupère l'utilisateur à modifier par son identifiant
         if(existingUser == null) return null; // Si l'utilisateur à modifier est 'null', 'null' est donc renvoyé
-
+        checkPermission(ERole.ROLE_ADMIN); // S'il n'a pas la permission pour modifier l'entité cible, on envoie une erreur
 
         /**********************************************************/
 
@@ -245,8 +282,8 @@ public class UserService {
         Set<Project> projects = user.getProjects(); // Récupère les projets modifiés de l'utilisateur
 
         String name = user.getName(); // Récupère le nom modifié de l'utilisateur
-        String password = user.getPassword(); // Récupère le mot de passe modifié de l'utilisateur
         String email = user.getEmail(); // Récupère l'adresse e-mail modifiée de l'utilisateur
+        String password = user.getPassword(); // Récupère le mot de passe modifié de l'utilisateur
 
         /**********************************************************/
 
@@ -259,13 +296,48 @@ public class UserService {
         // ⬇️ Modifie l'adresse e-mail de l'utilisateur, si cela a été demandé, désactive l'utilisateur et envoie un compte d'activation sur le nouveau mail ⬇️ //
         if(Strings.isNotBlank(email) && !existingUser.getEmail().equalsIgnoreCase(email)) {
 
+            /**
+             * Si l'utilisateur connecté n'a pas la permission pour modifier
+             * l'entité cible dans la base de donnés, on envoie donc une exception !
+             */
+            if(!PermissionHelper.userHasRole(ERole.ROLE_ADMIN)) throw new UnauthorizedException(PermissionHelper.UNAUTHORIZED_MESSAGE);
             existingUser.setEmail(email); // Ajoute le nouvel adresse e-mail à l'utilisateur
-            existingUser = userRepository.save(existingUser); // Sauvegarde l'utilisateur en base de données
         }
         // ⬆️ Modifie l'adresse e-mail de l'utilisateur, si cela a été demandé, désactive l'utilisateur et envoie un compte d'activation sur le nouveau mail ⬆️ //
 
         // Renvoie le 'DTO' de l'utilisateur en sauvegardant l'utilisateur en base de donnée
         return dtoService.convertToDTO(new UserDTO(), userRepository.save(existingUser));
+    }
+
+    /**
+     * Activation d'un {@link User utilisateur}.
+     *
+     * @param id L'{@link Long Identifiant} de l'{@link User utilisateur}.
+     *
+     * @return Une {@link ResponseEntity réponse http} récupérant une valeur booléenne vérifiant si l'{@link User utilisateur} a bien été activé ('true' ou 'false').
+     */
+    @Transactional(rollbackFor = { UnauthorizedException.class })
+    public SerializableResponseEntity<?> enableUser(final Long id) {
+
+        Map<String, Boolean> responseMap = new HashMap<>(); // Dictionnaire 'map' pour récupérer une clé → valeur (utile pour le retour de la réponse http)
+        responseMap.putIfAbsent("isEnabled", false); // Redéfinit une clé → valeur : L'Utilisateur a-t-il était activé ?
+        checkPermission(ERole.ROLE_SUPERADMIN); // S'il n'a pas la permission pour vérifier l'entité cible, on envoie une erreur
+
+        /**********************************/
+
+        userRepository.findById(id).ifPresent(user -> {
+
+            user.setVerificationEnabled(true); // Désactive le compte de l'utilisateur
+            userRepository.save(user); // Sauvegarde l'utilisateur en base de données
+
+            /*******************/
+
+            responseMap.replace("isEnabled", true); // Redéfinit une clé → valeur : L'Utilisateur a-t-il était activé ?
+        });
+
+        /******************************/
+
+        return new SerializableResponseEntity<>(responseMap, HttpStatus.OK); // Renvoie la réponse http
     }
 
     /**
@@ -297,96 +369,22 @@ public class UserService {
         return new SerializableResponseEntity<>(responseMap, HttpStatus.OK); // Renvoie la réponse http
     }
 
-    /***********************************************************************************/
-    /***********************************************************************************/
+    /******************************************************************************************************************/
+    /******************************************************************************************************************/
+    /******************************************************************************************************************/
 
     /**
-     * Récupère la {@link Set liste} des {@link Role rôle}s pour un {@link User utilisateur} à partir d'une liste de plusieurs {@link String nom}s des {@link Role rôle}s donnés.
+     * Envoie un {@link UnauthorizedException exception} si l'utilisateur connecté n'a pas la permission adéquate.
      *
-     * @param strRoles La {@link Set liste} des {@link String nom}s des {@link Role rôle}s pour l'utilisateur.
+     * @param role Le {@link ERole nom du rôle} à valider.
      *
-     * @return La {@link Set liste} des {@link Role rôle}s pour un {@link User utilisateur} à partir d'une liste des {@link String nom}s des {@link Role rôle}s donnés.
+     * @throws UnauthorizedException Si l'utilisateur connecté n'a pas la permission adéquate.
      */
-    public Set<Role> checkRolesName(Set<String> strRoles) {
-
-        Set<Role> roles = new HashSet<>(); // Lites des noms des rôles vides (utile pour la récupération les rôles)
-
-        /***********************************************/
-        /***********************************************/
+    private void checkPermission(ERole role) throws UnauthorizedException {
 
         /**
-         * On vérifie le premier nom de rôle récupéré, et ainsi, on ajoute à la liste les rôles dépendants en fonction du rôle en question
-         * et de ce qu'il se trouve dans la liste
+         * Si l'utilisateur connecté n'a pas la permission adéquate, on envoie donc une exception !
          */
-        switch(new ArrayList<>(strRoles).getFirst().toLowerCase()) {
-
-            /**
-             * Si on récupère le rôle `super-admin` : on l'ajoute à la liste avec d'autres rôles dépendants
-             */
-            case "superadmin", "super_admin", "role_superadmin" -> {
-
-                Role ownerRole = roleService.checkedRole(ERole.ROLE_SUPERADMIN); // Vérifie le rôle `super-admin`
-
-                /**************************************************/
-
-                // On ajoute à la liste les rôles dépendants en effectuant les vérifications nécessaires
-                roles.addAll(checkRolesName(new HashSet<>(List.of("admin", "unknown"))));
-                roles.add(ownerRole); // On ajoute à la liste le rôle `super-admin`
-            }
-
-            /**
-             * Si on récupère le rôle `admin` : on l'ajoute à la liste avec d'autres rôles dépendants
-             * (on lui ajoute également à la liste le rôle au-dessus s'il en contient un)
-             */
-            case "admin", "role_admin" -> {
-
-                Set<String> rolesToAdd = new HashSet<>(List.of("unknown")); // Récupère une liste de rôle dépendant
-                Role adminRole = roleService.checkedRole(ERole.ROLE_ADMIN); // Vérifie le rôle `admin`
-
-                /**************************************************/
-
-                // Effectue une vérification du rôle de super administrateur
-                checkRolesNameExist(strRoles, rolesToAdd, ERole.ROLE_SUPERADMIN, "superadmin", "super_admin", "super_admin");
-
-                /********************************/
-
-                if(!rolesToAdd.isEmpty()) roles.addAll(checkRolesName(rolesToAdd)); // On ajoute à la liste les rôles dépendants
-                roles.add(adminRole); // On ajoute à la liste le rôle `admin`
-            }
-
-            /**
-             * Par défaut : on ajoute le rôle d'Inconnue(e), (on lui ajoute également à la liste le rôle au-dessus s'il en contient un)
-             */
-            default -> {
-
-                Set<String> rolesToAdd = new HashSet<>(); // Récupère une liste de rôle dépendant [Vide par défaut, car il s'agit du rôle le plus bas]
-                Role employeeRole = roleService.checkedRole(ERole.ROLE_UNKNOWN); // Vérifie le rôle `Inconnue`
-
-                /**************************************************/
-
-                // Effectue une vérification du rôle de super administrateur
-                checkRolesNameExist(strRoles, rolesToAdd, ERole.ROLE_SUPERADMIN, "superadmin", "super_admin", "super_admin");
-
-                // Effectue une vérification du rôle d'administrateur
-                checkRolesNameExist(strRoles, rolesToAdd, ERole.ROLE_ADMIN, "admin", "role_admin");
-
-                /********************************/
-
-                if(!rolesToAdd.isEmpty()) roles.addAll(checkRolesName(rolesToAdd));
-                roles.add(employeeRole); // On ajoute à la liste le rôle `Inconnue(e)`
-            }
-        }
-
-        /***********************************************/
-        /***********************************************/
-
-        return roles; // Renvoie la liste des rôles en fonction des noms récupérés et des rôles dépendants
-    }
-
-    /***********************************************************************************/
-
-    private void checkRolesNameExist(Set<String> targetRolesName, Set<String> rolesNameToAdd, ERole initialRoleName, String ...searchNames) {
-
-        if(StrHelper.containsIgnoreCase(targetRolesName, searchNames)) rolesNameToAdd.add(initialRoleName.name());
+        if(!PermissionHelper.userHasRole(role)) throw new UnauthorizedException(PermissionHelper.UNAUTHORIZED_MESSAGE);
     }
 }

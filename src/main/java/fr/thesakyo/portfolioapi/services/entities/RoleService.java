@@ -1,6 +1,5 @@
 package fr.thesakyo.portfolioapi.services.entities;
 
-import fr.thesakyo.portfolioapi.enums.ERole;
 import fr.thesakyo.portfolioapi.models.DTO.RoleDTO;
 import fr.thesakyo.portfolioapi.models.SerializableResponseEntity;
 import fr.thesakyo.portfolioapi.models.entities.Role;
@@ -11,10 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class RoleService {
@@ -36,12 +32,12 @@ public class RoleService {
     /**
      * Récupération de tous les {@link Role rôle}s.
      *
-     * @return Une {@link List liste} de {@link RoleDTO rôle}s.
+     * @return Une {@link Set liste} de {@link RoleDTO rôle}s.
      */
-    public List<RoleDTO> getAllRoles() {
+    public Set<RoleDTO> getAllRoles() {
 
         // On renvoie la liste de rôle(s) et les convertis en leur 'DTO' respectif
-        return dtoService.convertToDTOs(new RoleDTO(), roleRepository.findAll());
+        return new HashSet<>(dtoService.convertToDTOs(new RoleDTO(), new HashSet<>(roleRepository.findAll())));
     }
 
     /**
@@ -75,18 +71,4 @@ public class RoleService {
         responseMap.putIfAbsent("isAvailable", roleRepository.existsById(id)); // Envoie dans le dictionnaire 'map' une vérification si le rôle existe
         return new SerializableResponseEntity<>(responseMap, HttpStatus.OK); // Renvoie la réponse http avec le dictionnaire 'map'
     }
-
-    /***********************************************************************************/
-    /***********************************************************************************/
-
-    /**
-     * Vérifie et récupère le {@link Role rôle} demandé.
-     *
-     * @param role Le {@link ERole nom du rôle} en question.
-     *
-     * @return Le {@link Role rôle} demandé.
-     *
-     * @throws RuntimeException Une exception est envoyé en cas de rôle introuvable.
-     */
-    public Role checkedRole(ERole role) { return roleRepository.findByName(role).orElseThrow(() -> new RuntimeException("Erreur : Le rôle est introuvable.")); }
 }
