@@ -53,6 +53,7 @@ hs_err_pid*
 replay_pid*
 
 #################### IntelliJ.gitignore ####################
+
 .idea/*
 target/*
 src/test/*
@@ -61,6 +62,7 @@ src/test/*
 *.ipr
 
 #################### NetBeans.gitignore ####################
+
 /nbproject/private/
 /nbbuild/
 /dist/
@@ -71,10 +73,12 @@ build/
 !**/src/test/**/build/
 
 #################### VSCode.gitignore ####################
+
 .vscode/
 !/src/main/resources/application.properties
 
 #################### STS.gitignore ####################
+
 .apt_generated
 .classpath
 .factorypath
@@ -84,6 +88,7 @@ build/
 .sts4-cache
 
 #################### Custom.gitignore ####################
+
 # custom gitignore here:
 !/.idea/
 !.gitignore
