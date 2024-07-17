@@ -85,6 +85,7 @@ build/
 
 #################### Custom.gitignore ####################
 # custom gitignore here:
+!/.idea/
 !.gitignore
 !.gitsubmodules
 !/.shelf/
