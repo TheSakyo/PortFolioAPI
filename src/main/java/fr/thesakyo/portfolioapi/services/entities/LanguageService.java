@@ -59,7 +59,7 @@ public class LanguageService {
      *
      * @return Une {@link Set liste} de {@link LanguageDTO langage}s.
      */
-    public <C extends BaseEntity> Set<LanguageDTO> getAllCategories(Class<C> entityClazz, Long entityId) {
+    public <C extends BaseEntity> Set<LanguageDTO> getAllLanguages(Class<C> entityClazz, Long entityId) {
 
         // Récupère la liste des langages
         Set<Language> languages = new HashSet<>(languageRepository.findAll());

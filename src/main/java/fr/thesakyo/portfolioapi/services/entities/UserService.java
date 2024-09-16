@@ -24,7 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static java.lang.StringTemplate.STR;
 
 @Service
 public class UserService {
@@ -103,7 +102,7 @@ public class UserService {
      *
      * @return Une {@link ResponseEntity réponse http} permettant de récupérer un objet '{@link UserDTO utilisateur}'.
      */
-    public SerializableResponseEntity<?> getUser(@Nullable Long id) {
+    public SerializableResponseEntity<?> getUserById(@Nullable Long id) {
 
         User user = userRepository.findById(id).orElse(null); // Récupère l'utilisateur par son identifiant
         Map<String, Object> responseMap = new HashMap<>(); // Dictionnaire 'map' pour récupérer une clé → valeur (utile pour le retour de la réponse http)
@@ -344,12 +343,11 @@ public class UserService {
      * Suppression/Désactivation d'un {@link User utilisateur}.
      *
      * @param id L'{@link Long Identifiant} de l'{@link User utilisateur}.
-     * @param disableUser Doit-on plutôt désactiver l'{@link User utilisateur}.
      *
      * @return Une {@link ResponseEntity réponse http} récupérant une valeur booléenne vérifiant si l'{@link User utilisateur} a bien été supprimé ('true' ou 'false').
      */
     @Transactional(rollbackFor = { UnauthorizedException.class })
-    public SerializableResponseEntity<?> deleteUser(final Long id, boolean disableUser) {
+    public SerializableResponseEntity<?> deleteUser(final Long id) {
 
         Map<String, Boolean> responseMap = new HashMap<>(); // Dictionnaire 'map' pour récupérer une clé → valeur (utile pour le retour de la réponse http)
         responseMap.putIfAbsent("isDeleted", false); // Redéfinit une clé → valeur : L'Utilisateur a-t-il était supprimé ?
@@ -361,7 +359,12 @@ public class UserService {
 
         /**********************************************************/
 
-        userRepository.deleteById(id); // Supprime l'utilisateur
+        if(existingUser.getVerificationEnabled()) existingUser.setVerificationEnabled(false); // Désactive le compte de l'utilisateur, si ce n'est pas le cas
+        else userRepository.deleteById(id); // Sinon, on supprime l'utilisateur
+
+        /**********************************************************/
+
+        responseMap.replace("isDisabled", !existingUser.getVerificationEnabled()); // Redéfinit une clé → valeur : L'Utilisateur a-t-il était supprimé ?
         responseMap.replace("isDeleted", !userRepository.existsById(id)); // Redéfinit une clé → valeur : L'Utilisateur a-t-il était supprimé ?
 
         /******************************/

@@ -62,7 +62,7 @@ public class AuthController {
      * Mis à jour d'un {@link User utilisateur}.
      *
      * @param id L'{@link Long identifiant} de l'{@link User utilisateur} en question.
-     * @param updateUserRequest Une '{@link RegisterUserRequest requête de mise à jour}' pour modifier les informations de l'{@link User utilisateur} en question.
+     * @param updateUserRequest Une '{@link UpdateUserRequest requête de mise à jour}' pour modifier les informations de l'{@link User utilisateur} en question.
      *
      * @return Une {@link SerializableResponseEntity réponse sérialisé en http} incluant l'{@link User utilisateur} modifié.
      */
