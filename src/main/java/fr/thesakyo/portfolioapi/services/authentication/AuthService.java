@@ -123,14 +123,13 @@ public class AuthService {
      * Création d'un {@link User utilisateur} dans la base de données, ainsi, on lui ajoute ses rôles respectifs.
      *
      * @param registerUserRequest Un '{@link RegisterUserRequest objet de requête}' pour la création de l'{@link User utilisateur} en question.
-     * @param redirectURL Le {@link String lien de redirection} a renvoyé par e-mail après que l'utilisateur est enregistrée en base de donnée.
      *
      * @return Une {@link ResponseEntity réponse http} incluant l'utilisateur créé si la requête fût un succès (sinon ça retourne une {@link ResponseEntity réponse http} d'erreur).
      *
      * @throws UnauthorizedException Si l'utilisateur n'a pas la permission pour modifier l'entité cible
      */
     @Transactional(rollbackFor = { UnauthorizedException.class })
-    public SerializableResponseEntity<?> register(RegisterUserRequest registerUserRequest, String redirectURL) {
+    public SerializableResponseEntity<?> register(RegisterUserRequest registerUserRequest) {
 
         // Récupère la réponse http de la requête pour la création de l'utilisateur
         SerializableResponseEntity<?> response = userRequest(registerUserRequest);
