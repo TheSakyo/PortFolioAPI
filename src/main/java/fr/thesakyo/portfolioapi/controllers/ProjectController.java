@@ -90,5 +90,6 @@ public class ProjectController {
      *
      * @return Une {@link SerializableResponseEntity réponse sérialisé en http} incluant une valeur booléenne du statut de la suppression.
      */
+    @RequestMapping(value = "/delete/{id}", method = RequestMethod.DELETE)
     public SerializableResponseEntity<?> delete(@PathVariable("id") Long id) { return projectService.deleteProject(id); }
 }
