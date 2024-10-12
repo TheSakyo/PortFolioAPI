@@ -6,7 +6,7 @@ import fr.thesakyo.portfolioapi.models.entities.User;
 import fr.thesakyo.portfolioapi.models.entities.Project;
 
 import fr.thesakyo.portfolioapi.enums.ERole;
-import fr.thesakyo.portfolioapi.repositories.LanguageRepository;
+import fr.thesakyo.portfolioapi.repositories.UserRepository;
 import fr.thesakyo.portfolioapi.security.UserConnection;
 
 public abstract class PermissionHelper {
@@ -54,13 +54,13 @@ public abstract class PermissionHelper {
      * Vérifie si l'{@link User utilisateur} connecté à le {@link Language langage} dont il est question dans ses {@link Project projet}s associés.
      *
      * @param targetLanguage Le {@link Language langage} à vérifier.
-     * @param languageRepository Le {@link LanguageRepository référentiel du langage} pour rechercher en base de données.
+     * @param userRepository Le {@link UserRepository référentiel de l'utilisateur} pour rechercher en base de données les correspondances.
      *
      * @return Une valeur booléenne vérifiant si l'{@link User utilisateur} connecté à le {@link Language langage} demandé dans ses {@link Project projet}s associés.
      */
-    public static boolean userHasLanguageInProjetsPermission(Language targetLanguage, LanguageRepository languageRepository) {
+    public static boolean userHasLanguageInProjetsPermission(Language targetLanguage, UserRepository userRepository) {
 
         if(UserConnection.getUserLogged() == null) return false;
-        return languageRepository.existsUserByIdAndLanguageIdInProjects(targetLanguage.getId(), UserConnection.getUserLogged().getId()) || userHasRole(ERole.ROLE_SUPERADMIN);
+        return userRepository.existsByIdAndLanguageIdInProjects(UserConnection.getUserLogged().getId(), targetLanguage.getId()) || userHasRole(ERole.ROLE_SUPERADMIN);
     }
 }
