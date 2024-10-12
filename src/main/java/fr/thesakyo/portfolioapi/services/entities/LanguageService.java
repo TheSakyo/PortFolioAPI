@@ -207,7 +207,7 @@ public class LanguageService {
 
         // Définit une clé → valeur : Le langage a-t-il était supprimée ?
         responseMap.putIfAbsent("isDeleted", !languageRepository.existsById(languageId));
-        responseMap.putIfAbsent("isModified", PermissionHelper.userHasLanguageInProjetsPermission(existingLanguage, languageRepository));
+        responseMap.putIfAbsent("isModified", PermissionHelper.userHasLanguageInProjetsPermission(existingLanguage, userRepository));
         return new SerializableResponseEntity<>(responseMap, HttpStatus.OK); // Renvoie la réponse http
     }
 
@@ -357,7 +357,7 @@ public class LanguageService {
         /**
          * On vérifie si l'utilisateur à bien de langage associé à l'un de ses projets, sinon, il n'a pas la permission !
          */
-        if(language == null || !PermissionHelper.userHasLanguageInProjetsPermission(language, languageRepository)) hasPermission = false;
+        if(language == null || !PermissionHelper.userHasLanguageInProjetsPermission(language, userRepository)) hasPermission = false;
 
         // S'il s'agit d'une création, il a finalement la permission
         if(!isUpdate) hasPermission = true;
