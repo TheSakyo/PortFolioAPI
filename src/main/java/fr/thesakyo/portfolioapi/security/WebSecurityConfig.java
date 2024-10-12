@@ -203,7 +203,7 @@ public class WebSecurityConfig {
 
                     /**************************************************/
 
-                    // Toute autre demande doit être authentifiée
+                    // Exige une authentification pour toutes les requêtes HTTP.
                     auth.anyRequest().authenticated();
                 });
 
