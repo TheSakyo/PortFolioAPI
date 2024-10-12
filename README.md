@@ -1,5 +1,5 @@
 <h1>PortFolioAPI</h1>
 
-<h2>API en Java SpringBoot pour faire mon portfolio, ceci me permet de montrer mes compétences sur le framework.</h2>
+<h2>API développée en Java avec SpringBoot pour la gestion de mon portfolio, mettant en avant mes compétences sur ce framework.</h2>
 
-<p>Vous pouvez allez rendre voir mon portfolio en allant sur ce lien : <a href="https://portfolio.sakyo-dev.pro">EN DÉVELOPPEMENT</a><p>
+<p>Vous pouvez consulter mon portfolio en suivant ce lien : <a href="https://portfolio.sakyo-dev.pro">Work In Progress</a></p>
