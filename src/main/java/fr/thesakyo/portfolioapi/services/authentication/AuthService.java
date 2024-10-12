@@ -251,6 +251,8 @@ public class AuthService {
         String email = baseRequest.getEmail() != null ? baseRequest.getEmail() : null; // Adresse e-mail de l'utilisateur a sauvegardé
         String name = baseRequest.getName() != null ? baseRequest.getName() : null; // Nom de l'utilisateur a sauvegardé
         String password = baseRequest.getPassword() != null ? encoder.encode(baseRequest.getPassword()) : null; // Mot de passe (crypté) de l'utilisateur a sauvegardé
+        boolean isEnabled = baseRequest instanceof RegisterUserRequest || baseRequest.getVerificationEnabled(); // Vérification du compte de l'utilisateur ('true' par défaut, si c'est une inscription)
+
 
         // ⬇️ Lite des noms des rôles de l'utilisateur a sauvegardé ⬇️ //
         Set<String> strRoles = baseRequest.getRoles();
@@ -266,7 +268,7 @@ public class AuthService {
         /****************************************************************/
         /****************************************************************/
 
-        User user = new User(name, email, password, baseRequest.getVerificationEnabled(), new HashSet<>(), new HashSet<>()); // Création d'un nouvel objet utilisateur
+        User user = new User(name, email, password, isEnabled, new HashSet<>(), new HashSet<>()); // Création d'un nouvel objet utilisateur
         user.setRoles(RoleHelper.checkRolesName(strRoles, roleRepository)); // Ajoute les rôles dont il est question à l'utilisateur
         return new SerializableResponseEntity<>(user, HttpStatus.OK); // Renvoie une réponse de l'utilisateur
     }
