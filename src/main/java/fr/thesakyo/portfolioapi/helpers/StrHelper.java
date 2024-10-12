@@ -21,4 +21,30 @@ public abstract class StrHelper {
 
         return Arrays.stream(searchValue).anyMatch(value -> array.stream().anyMatch(element -> element.equalsIgnoreCase(value)));
     }
+
+    /**
+     * Combine deux tableaux de {@link String chaînes de caractères} en un seul tableau.
+     *
+     * @param firstArray  Le premier tableau de {@link String chaînes de caractères} à combiner.
+     * @param secondArray Le deuxième tableau de {@link String chaînes de caractères} à combiner.
+     *
+     * @return Un tableau de {@link String chaînes de caractères} combiné contenant tous les éléments des deux tableaux.
+     */
+    public static String[] combineArrays(String[] firstArray, String[] secondArray) {
+
+        // Crée un tableau de la taille combinée des deux tableaux.
+        String[] combinedArray = new String[firstArray.length + secondArray.length];
+
+        /********************/
+
+        // Copie le premier tableau dans le tableau combiné.
+        System.arraycopy(firstArray, 0, combinedArray, 0, firstArray.length);
+
+        // Copie le deuxième tableau dans le tableau combiné.
+        System.arraycopy(secondArray, 0, combinedArray, firstArray.length, secondArray.length);
+
+        /********************/
+
+        return combinedArray; // Renvoie le tableau combiné.
+    }
 }
