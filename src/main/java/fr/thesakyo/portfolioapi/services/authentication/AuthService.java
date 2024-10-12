@@ -154,7 +154,7 @@ public class AuthService {
 
             /******************************************/
 
-            // Récupère le rôle des employées, s'il existe, sinon, on envoie une erreur
+            // Récupère le rôle inconnu, s'il existe, sinon, on envoie une erreur
             Role userRole = roleRepository.findByName(ERole.ROLE_UNKNOWN).orElseThrow(() -> new RuntimeException("Erreur : Le rôle est introuvable."));
             roles.add(userRole); // Ajour le roles à la liste des rôles de l'utilisateur
 
