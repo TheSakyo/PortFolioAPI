@@ -178,7 +178,7 @@ public class UserService {
              */
             List<Role> rolesOfUser = userConnected.getRoles().stream().filter(targetRole -> (role == null || targetRole.getName() == ERole.ROLE_SUPERADMIN
                     || targetRole.getSeverity() > role.getSeverity())).toList();
-            if(rolesOfUser.isEmpty()) throw new AccessDeniedException(STR."Vous n'avez pas la permission pour \{status} le rôle \{role != null ? role.getName() : "undefined"} à un utilisateur");
+            if(rolesOfUser.isEmpty()) throw new AccessDeniedException(String.format("Vous n'avez pas la permission pour %s le rôle %s à un utilisateur", status, role != null ? role.getName() : "undefined"));
         }
 
         /***********************************/

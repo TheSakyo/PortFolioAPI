@@ -1,7 +1,6 @@
 package fr.thesakyo.portfolioapi.services.entities;
 
 import fr.thesakyo.portfolioapi.enums.ERole;
-import fr.thesakyo.portfolioapi.enums.EStack;
 import fr.thesakyo.portfolioapi.exceptions.UnauthorizedException;
 import fr.thesakyo.portfolioapi.helpers.ObjectHelper;
 import fr.thesakyo.portfolioapi.helpers.PermissionHelper;

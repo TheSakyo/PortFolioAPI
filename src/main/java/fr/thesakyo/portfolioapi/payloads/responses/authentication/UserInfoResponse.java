@@ -2,7 +2,6 @@ package fr.thesakyo.portfolioapi.payloads.responses.authentication;
 
 import fr.thesakyo.portfolioapi.helpers.MapperHelper;
 import fr.thesakyo.portfolioapi.models.entities.User;
-import fr.thesakyo.portfolioapi.models.DTO.ProjectDTO;
 import fr.thesakyo.portfolioapi.models.DTO.RoleDTO;
 
 import java.util.Set;
