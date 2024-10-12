@@ -284,6 +284,8 @@ public class UserService {
         String email = user.getEmail(); // Récupère l'adresse e-mail modifiée de l'utilisateur
         String password = user.getPassword(); // Récupère le mot de passe modifié de l'utilisateur
 
+        boolean isEnabled = user.getVerificationEnabled(); // Vérifie si l'utilisateur authentifié est vérifié
+
         /**********************************************************/
 
         if(roles != null && !roles.isEmpty()) existingUser.setRoles(roles);
@@ -292,7 +294,7 @@ public class UserService {
         if(Strings.isNotBlank(name)) existingUser.setName(name); // Modifie le nom de l'utilisateur, si cela a été demandé
         if(Strings.isNotBlank(password)) existingUser.setPassword(password); // Modifie le mot de passe de l'utilisateur
 
-        // ⬇️ Modifie l'adresse e-mail de l'utilisateur, si cela a été demandé, désactive l'utilisateur et envoie un compte d'activation sur le nouveau mail ⬇️ //
+        // ⬇️ Modifie l'adresse e-mail de l'utilisateur, si cela a été demandé ⬇️ //
         if(Strings.isNotBlank(email) && !existingUser.getEmail().equalsIgnoreCase(email)) {
 
             /**
@@ -302,7 +304,10 @@ public class UserService {
             if(!PermissionHelper.userHasRole(ERole.ROLE_ADMIN)) throw new UnauthorizedException(PermissionHelper.UNAUTHORIZED_MESSAGE);
             existingUser.setEmail(email); // Ajoute le nouvel adresse e-mail à l'utilisateur
         }
-        // ⬆️ Modifie l'adresse e-mail de l'utilisateur, si cela a été demandé, désactive l'utilisateur et envoie un compte d'activation sur le nouveau mail ⬆️ //
+        // ⬆️ Modifie l'adresse e-mail de l'utilisateur, si cela a été demandé ⬆️ //
+
+        // Modifie l'activation de l'utilisateur, s'il est différent
+        if(isEnabled != existingUser.getVerificationEnabled()) existingUser.setVerificationEnabled(isEnabled);
 
         // Renvoie le 'DTO' de l'utilisateur en sauvegardant l'utilisateur en base de donnée
         return dtoService.convertToDTO(new UserDTO(), userRepository.save(existingUser));

@@ -39,6 +39,13 @@ public interface BaseRequest extends Serializable {
      */
      default Set<String> getRoles() { return null; }
 
+    /**
+     * Vérifie si le compte de l'utilisateur authentifié est vérifié.
+     *
+     * @return Une {@link Boolean valeur booléenne}.
+     */
+    default boolean getVerificationEnabled() { return false; }
+
                     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
                     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
                     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -69,4 +76,11 @@ public interface BaseRequest extends Serializable {
      * @param roles La {@link Set liste} des {@link String nom}s des {@link Role rôle}s qui seront associés à l'utilisateur.
      */
     default void setRoles(Set<String> roles) {}
+
+    /**
+     * Définit si le compte de l'utilisateur authentifié est vérifié.
+     *
+     * @param isEnabled Le compte de l'utilisateur authentifié est-il vérifié ?
+     */
+    default void setVerificationEnabled(boolean isEnabled) {}
 }

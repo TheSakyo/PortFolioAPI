@@ -1,5 +1,6 @@
 package fr.thesakyo.portfolioapi.payloads.requests.authentication.user;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import fr.thesakyo.portfolioapi.models.entities.Role;
 import fr.thesakyo.portfolioapi.helpers.MapperHelper;
 import fr.thesakyo.portfolioapi.payloads.requests.authentication.BaseRequest;
@@ -25,6 +26,9 @@ public class UpdateUserRequest implements BaseRequest, Serializable {
     private String password; // Mot de passe (crypté) depuis le formulaire de modification.
 
     private Set<String> roles; // Liste des rôles associés 0 l'utilisateur depuis le formulaire de modification.
+
+    @JsonIgnore
+    private boolean verificationEnabled; // Vérifie le compte de l'utilisateur authentifié est vérifié.
 
     /****************************************************************/
     /**************   ⬇️    GETTERS & SETTERS    ⬇️   **************/
@@ -62,6 +66,14 @@ public class UpdateUserRequest implements BaseRequest, Serializable {
     @Override
     public Set<String> getRoles() { return roles; }
 
+    /**
+     * Vérifie si le compte authentifié est vérifié.
+     *
+     * @return Une {@link Boolean valeur booléenne}.
+     */
+    @Override
+    public boolean getVerificationEnabled() { return verificationEnabled; }
+
                     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
                     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
                     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -97,6 +109,14 @@ public class UpdateUserRequest implements BaseRequest, Serializable {
      */
     @Override
     public void setRoles(Set<String> roles) { this.roles = roles; }
+
+    /**
+     * Définit si le compte authentifié est vérifié.
+     *
+     * @param isEnabled Le compte authentifié est-il vérifié ?
+     */
+    @Override
+    public void setVerificationEnabled(boolean isEnabled) { this.verificationEnabled = isEnabled; }
 
     /******************************************************************************************************************/
     /******************************************************************************************************************/
