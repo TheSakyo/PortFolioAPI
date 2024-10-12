@@ -21,6 +21,7 @@ public class Role extends BaseEntity implements Serializable  {
 
     private Integer severity = 0; // Le niveau de gravité du rôle
 
+    @Column(name = "description", length = Integer.MAX_VALUE)
     private String description; // Description du rôle
 
     /*****************************************************************/
