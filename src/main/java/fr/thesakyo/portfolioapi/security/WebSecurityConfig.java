@@ -1,5 +1,7 @@
 package fr.thesakyo.portfolioapi.security;
 
+import fr.thesakyo.portfolioapi.enums.ERole;
+import fr.thesakyo.portfolioapi.helpers.StrHelper;
 import fr.thesakyo.portfolioapi.security.jwt.AuthEntryPointJwt;
 import fr.thesakyo.portfolioapi.security.jwt.AuthTokenFilter;
 import fr.thesakyo.portfolioapi.services.authentication.UserDetailsServiceImpl;
@@ -7,12 +9,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -24,6 +29,7 @@ import org.springframework.web.multipart.MultipartResolver;
 import org.springframework.web.multipart.support.StandardServletMultipartResolver;
 import org.springframework.web.servlet.DispatcherServlet;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -147,21 +153,60 @@ public class WebSecurityConfig {
 
                     return cors;
 
-                })).authorizeHttpRequests(auth ->
+                })).authorizeHttpRequests(auth -> {
+
+                    /**
+                     * Tableau des chemins (endpoints) de l'api à autoriser
+                     */
+                    String[] endpoints = {
+                            "/api/auth/**",
+                            "/api/users/**",
+                            "/api/languages/**",
+                            "/api/projects/**",
+                            "/api/roles/**",
+                            "api/images/**"
+                    };
+
+                    /**
+                     * Tableau des chemins des ressources de l'API à autoriser
+                     */
+                    String[] ressources = {
+                            "/ressources/**",
+                            "/js/**",
+                            "/css/**",
+                            "/images/**"
+                    };
+
+                    /**************************************************/
+                    /**************************************************/
+
+                    /**
+                     * Condition spéciale pour '/api/auth/signup' (Permission à la connexion)
+                     */
                     auth.requestMatchers(request -> {
-                            String path = request.getServletPath();
-                            return path.startsWith("/api/auth/signup");
-                        }).permitAll()
-                        .requestMatchers("/actuator/**").permitAll()
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/users/**").permitAll()
-                        .requestMatchers("/api/languages/**").permitAll()
-                        .requestMatchers("/api/projects/**").permitAll()
-                        .requestMatchers("/api/roles/**").permitAll()
-                        .requestMatchers("/api/images/**").permitAll()
-                        .requestMatchers("/ressources/**", "/js/**,", "/css/**", "images/**").permitAll()
-                        .anyRequest().authenticated()
-                );
+                        String path = request.getServletPath();
+                        return path.startsWith("/api/auth/signup");
+                    }).permitAll();
+
+                    /**************************************************/
+
+                    // Configure l'accès aux 'endpoints' avec la méthode http 'GET' (Autorisation d'accès pour tous)
+                    auth = configureRequestMatchers(auth, HttpMethod.GET, StrHelper.combineArrays(endpoints, ressources));
+
+                    // Configure l'accès aux 'endpoints' avec la méthode http 'POST' (Autorisation d'accès pour administrateur et super-administrateur uniquement)
+                    auth = configureRequestMatchers(auth, HttpMethod.POST, endpoints, ERole.ROLE_ADMIN, ERole.ROLE_SUPERADMIN);
+
+                    // Configure l'accès aux 'endpoints' avec la méthode http 'PATCH' (Autorisation d'accès pour administrateur et super-administrateur uniquement)
+                    auth = configureRequestMatchers(auth, HttpMethod.PATCH, endpoints, ERole.ROLE_ADMIN, ERole.ROLE_SUPERADMIN);
+
+                    // Configure l'accès aux 'endpoints' avec la méthode http 'DELETE' (Autorisation d'accès pour administrateur et super-administrateur uniquement)
+                    auth = configureRequestMatchers(auth, HttpMethod.DELETE, endpoints, ERole.ROLE_ADMIN, ERole.ROLE_SUPERADMIN);
+
+                    /**************************************************/
+
+                    // Toute autre demande doit être authentifiée
+                    auth.anyRequest().authenticated();
+                });
 
         // Correction de la console de base de données H2 : Refus d'afficher ' dans un cadre parce que la valeur 'X-Frame-Options' est 'deny'.
         http.headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin));
@@ -169,6 +214,42 @@ public class WebSecurityConfig {
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+
+    /*******************************************************************/
+    /*******************************************************************/
+    /*******************************************************************/
+
+    /**
+     * Configure les autorisations d'accès pour les chemins (endpoints) ainsi que sa {@link HttpMethod méthode HTTP} spécifié.
+     *
+     * Cette méthode permet d'automatiser la configuration des permissions sur des endpoints
+     * en fonction des méthodes HTTP ({@code GET}, {@code POST}, {@code PATCH}, {@code PUT}, {@code DELETE}, etc.) et des rôles définis.
+     * Si aucun rôle n'est spécifié, l'accès sera ouvert à tout le monde ({@code permitAll()}).
+     *
+     * @param auth      L'Objet {@link AuthorizeHttpRequestsConfigurer.AuthorizationManagerRequestMatcherRegistry} utilisé pour configurer les permissions d'accès.
+     * @param method    La  {@link HttpMethod méthode HTTP} ({@code GET}, {@code POST}, {@code PATCH}, {@code PUT}, {@code DELETE}, etc.) pour laquelle les permissions sont définies.
+     * @param paths     Un tableau de {@link String chaînes de caractères} représentant les chemins (endpoints) à configurer.
+     * @param roles     (Optionnel) Un tableau de {@link ERole rôle}s représentant les rôles autorisés à accéder aux endpoints.
+     *                  Si ce paramètre est vide, l'accès est autorisé à tout le monde ({@code permitAll()}).
+     */
+    private AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry configureRequestMatchers(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry auth, HttpMethod method, String[] paths, ERole... roles)  {
+
+        /**
+         * Pour tous les chemins représentant les 'endpoints' à configurer,
+         * on autorise l'accès avec sa méthode http associé en fonction des rôles spécifiés.
+         */
+        for(String path : paths) {
+
+            // Si aucun rôle(s) n'est spécifié(s), on autorise l'accès à tous (permitAll())
+            if(roles.length == 0) auth.requestMatchers(method, path).permitAll();
+
+            // Sinon, si des rôle(s) sont spécifié(s), on restreint l'accès à ces rôles
+            else auth.requestMatchers(method, path).hasAnyRole(Arrays.stream(roles).map(Enum::toString).toArray(String[]::new));
+        }
+
+        return auth; // Une fois la boucle terminée, on renvoie l'Objet AuthorizeHttpRequestsConfigurer.AuthorizationManagerRequestMatcherRegistry
     }
 }
 
