@@ -13,9 +13,9 @@ import java.util.Set;
 @Table(name = "users", uniqueConstraints = { @UniqueConstraint(columnNames = "email") })
 public class User extends BaseEntity implements Serializable {
 
-    /**********************************************************/
-    /**************   ⬇️    PROPRIÉTÉS    ⬇️   **************/
     /*********************************************************/
+    /**************   ⬇️    PROPRIÉTÉS    ⬇️   **************/
+    /********************************************************/
 
     @NotBlank
     private String name; // Nom de l'utilisateur.

@@ -5,6 +5,7 @@ import fr.thesakyo.portfolioapi.helpers.MapperHelper;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
+import org.hibernate.validator.constraints.URL;
 
 import java.io.Serializable;
 import java.util.Set;
@@ -25,7 +26,7 @@ public class Project extends BaseEntity implements Serializable {
     private String detail; // Détail du projet.
 
     @NotBlank
-    @Pattern(regexp = "^(http|https)://.*$", message = "Format d'URL Invalide")
+    @URL(regexp = "^(http|https)://.*$", message = "Format d'URL Invalide")
     private String link; // Lien du projet.
 
     @ManyToOne()
