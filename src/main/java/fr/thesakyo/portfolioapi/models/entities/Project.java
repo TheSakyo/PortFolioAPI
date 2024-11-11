@@ -21,8 +21,8 @@ public class Project extends BaseEntity implements Serializable {
     @NotBlank
     private String title; // Titre du projet.
 
+    @Lob
     @NotBlank
-    @Column(name = "detail", length = Integer.MAX_VALUE)
     private String detail; // Détail du projet.
 
     @NotBlank
@@ -60,7 +60,7 @@ public class Project extends BaseEntity implements Serializable {
      *
      * @param title Le {@link String titre} au {@link Project projet}.
      * @param detail La {@link String description} au {@link Project projet}.
-     * @param link Le {@link String mot de passe} au {@link Project projet}.
+     * @param link Le {@link String lien} au {@link Project projet}.
      * @param user L'{@link User utilisateur} associé au {@link Project projet}.
      * @param languages La {@link Set liste} des {@link Language langage}s associés au{@link Project projet}.
      */
@@ -82,7 +82,6 @@ public class Project extends BaseEntity implements Serializable {
      *
      * @return Le {@link String titre} du {@link Project projet}.
      */
-    @NotBlank
     public String getTitle() { return title; }
 
     /**
@@ -90,7 +89,6 @@ public class Project extends BaseEntity implements Serializable {
      *
      * @return Le {@link String détail} du {@link Project projet}.
      */
-    @NotBlank
     public String getDetail() { return detail; }
 
     /**
@@ -98,7 +96,6 @@ public class Project extends BaseEntity implements Serializable {
      *
      * @return Le {@link String lien} du {@link Project projet}.
      */
-    @NotBlank @Pattern(regexp = "^(http|https)://.*$", message = "Format d'URL Invalide")
     public String getLink() { return link; }
 
     /**
@@ -159,9 +156,9 @@ public class Project extends BaseEntity implements Serializable {
     /******************************************************************************************************************/
 
     /**
-     * Convertit l'{@link Object objet} de l'{@link Role entité} en {@link String chaîne de caractère}.
+     * Convertit l'{@link Object objet} de l'{@link Project entité} en {@link String chaîne de caractère}.
      *
-     * @return Une {@link String chaîne de caractère} de notre {@link Role entité}.
+     * @return Une {@link String chaîne de caractère} de notre {@link Project entité}.
      */
     @Override
     public String toString() { return MapperHelper.readJsonFromObjectAsString(this); }
