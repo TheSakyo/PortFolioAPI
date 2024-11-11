@@ -57,7 +57,7 @@ public abstract class RoleHelper {
              */
             case "admin", "role_admin" -> {
 
-                Set<String> rolesToAdd = new HashSet<>(List.of("projectmanager", "employee")); // Récupère une liste de rôle dépendant
+                Set<String> rolesToAdd = new HashSet<>(List.of("unknown")); // Récupère une liste de rôle dépendant
                 Role adminRole = checkedRole(ERole.ROLE_ADMIN, roleRepository); // Vérifie le rôle `admin`
 
                 /**************************************************/

@@ -3,6 +3,7 @@ package fr.thesakyo.portfolioapi.models.entities;
 import fr.thesakyo.portfolioapi.enums.ERole;
 import fr.thesakyo.portfolioapi.helpers.MapperHelper;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 
 import java.io.Serializable;
@@ -19,9 +20,10 @@ public class Role extends BaseEntity implements Serializable  {
     @Enumerated(EnumType.STRING)
     private ERole name; // Nom du rôle (utilise une énumération de type : chaîne de caractère).
 
+    @Min(0)
     private Integer severity = 0; // Le niveau de gravité du rôle
 
-    @Column(name = "description", length = Integer.MAX_VALUE)
+    @Lob
     private String description; // Description du rôle
 
     /*****************************************************************/
@@ -81,14 +83,14 @@ public class Role extends BaseEntity implements Serializable  {
      *
      * @param name Le {@link ERole nom} du {@link Role rôle}.
      */
-    public void setName(ERole name) { this.name = name; }
+    public void setName(@NotBlank ERole name) { this.name = name; }
 
     /**
      * Définit le {@link Integer niveau de gravité} du {@link Role rôle}.
      *
      * @param severity La {@link Integer niveau de gravité} du {@link Role rôle}.
      */
-    public void setSeverity(int severity) { this.severity = severity; }
+    public void setSeverity(@Min(0) int severity) { this.severity = severity; }
 
     /**
      * Définit la {@link String description} du {@link Role rôle}.
