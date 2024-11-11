@@ -61,16 +61,14 @@ public class Language extends BaseEntity implements Serializable {
      *
      * @return Le {@link String libellé} du {@link Language langage}.
      */
-    @NotBlank
     public String getLabel() { return label; }
 
     /**
      * Récupère la {@link EStack stack} du {@link Language langage}.
+     * La {@link EStack stack} peut uniquement être les valeurs suivantes : 'BACK_END', 'FRONT_END' ou 'FULL_STACK'.
      *
      * @return La {@link EStack stack} du {@link Language langage}.
-     * @note stack = ('BACK_END', 'FRONT_END' ou 'FULL_STACK').
      */
-    @NotBlank
     public EStack getStack() { return stack; }
 
     /**
@@ -93,9 +91,9 @@ public class Language extends BaseEntity implements Serializable {
 
     /**
      * Définit la {@link EStack stack} du {@link Language langage}.
+     * La {@link EStack stack} peut prendre les valeurs suivantes : 'BACK_END', 'FRONT_END' ou 'FULL_STACK'.
      *
      * @param stack La {@link EStack stack} du {@link Language langage}.
-     * @note stack = ('BACK_END', 'FRONT_END' ou 'FULL_STACK').
      */
     public void setStack(@NotBlank EStack stack) { this.stack = stack; }
 
@@ -111,9 +109,9 @@ public class Language extends BaseEntity implements Serializable {
     /******************************************************************************************************************/
 
     /**
-     * Convertit l'{@link Object objet} de l'{@link Role entité} en {@link String chaîne de caractère}.
+     * Convertit l'{@link Object objet} de l'{@link Language entité} en {@link String chaîne de caractère}.
      *
-     * @return Une {@link String chaîne de caractère} de notre {@link Role entité}.
+     * @return Une {@link String chaîne de caractère} de notre {@link Language entité}.
      */
     @Override
     public String toString() { return MapperHelper.readJsonFromObjectAsString(this); }
