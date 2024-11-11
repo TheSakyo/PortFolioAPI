@@ -6,9 +6,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
+import fr.thesakyo.portfolioapi.exceptions.RoleAlreadyAssignedException;
+import fr.thesakyo.portfolioapi.exceptions.UnauthorizedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+
+import fr.thesakyo.portfolioapi.models.entities.Role;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -38,7 +42,21 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
      * Envoie une exception en cas d'une action non autorisé.
      *
      * @param request La {@link HttpServletRequest requête} de la {@link ResponseEntity réponse http} renvoyée.
-     * @param ex L'{@link AccessDeniedException Exception} en question au moment d'une action non autorisé.
+     * @param ex L'{@link UnauthorizedException Exception} en question au moment d'une action non autorisé.
+     *
+     * @return Une exception {@link HashMap} englobant des détails sur l'erreur pour la partie 'front'.
+     */
+    @ExceptionHandler(UnauthorizedException.class)
+    public Map<String, Object> handleUnauthorizedException(HttpServletRequest request, AuthenticationException ex) {
+
+        return buildErrorResponse(request.getServletPath(), "NOT AUTHORIZED", HttpStatus.UNAUTHORIZED, ex);
+    }
+
+    /**
+     * Envoie une exception en cas d'une action avec un accès refusé.
+     *
+     * @param request La {@link HttpServletRequest requête} de la {@link ResponseEntity réponse http} renvoyée.
+     * @param ex L'{@link AccessDeniedException Exception} en question au moment d'une action avec un accès refusé.
      *
      * @return Une exception {@link HashMap} englobant des détails sur l'erreur pour la partie 'front'.
      */
@@ -46,6 +64,20 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     public Map<String, Object> handleAccessDeniedException(HttpServletRequest request, AuthenticationException ex) {
 
         return buildErrorResponse(request.getServletPath(), "Access Denied", HttpStatus.FORBIDDEN, ex);
+    }
+
+    /**
+     * Envoie une exception en cas d'un {@link Role rôle} déjà assigné à un utilisateur (Utile pour le Super Admin).
+     *
+     * @param request La {@link HttpServletRequest requête} de la {@link ResponseEntity réponse http} renvoyée.
+     * @param ex L'{@link RoleAlreadyAssignedException Exception} en question au moment d'un {@link Role rôle} déjà assigné à un utilisateur.
+     *
+     * @return Une exception {@link HashMap} englobant des détails sur l'erreur pour la partie 'front'.
+     */
+    @ExceptionHandler(RoleAlreadyAssignedException.class)
+    public Map<String, Object> handleRoleAlreadyAssignedException(HttpServletRequest request, AuthenticationException ex) {
+
+        return buildErrorResponse(request.getServletPath(), "Role Already Assigned", HttpStatus.LOCKED, ex);
     }
 
     /**
